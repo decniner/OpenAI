@@ -6,7 +6,7 @@ function chewy {
             [string]$prompt
         )
 
-    $apiKey = "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"
+    $apiKey = "insert here"
     #$model = "code-davinci-002"
     #$model = "davinci-codex"
     $model = "text-davinci-002"
