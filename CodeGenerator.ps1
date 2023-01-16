@@ -1,20 +1,32 @@
-function _generate-PSScript{
+function chewy {
+
     [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]$prompt,
-        [float]$temperature = 1.0,
-        [string]$model = "davinci-codex"
-    )
+        param (
+            [Parameter(Mandatory = $true)]
+            [string]$prompt
+        )
 
-    $apiKey = "sk-n0DNx0fYTxlVO3WmlKDxT3BlbKFJLbGrmvX8bDd93CVfgHSG"
-
+    $apiKey = "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"
+    #$model = "code-davinci-002"
+    #$model = "davinci-codex"
+    $model = "text-davinci-002"
     # Define the endpoint URL and parameters for the request
+    #$endpoint = "https://api.openai.com/v1/engines/davinci-codex/completions"
     $endpoint = "https://api.openai.com/v1/engines/$model/completions"
+    
     $parameters = @{
+        #"prompt" = "Write a powershell script to get the current time and display it on screen"
         "prompt" = $prompt
+        <#
         "max_tokens" = 1024
-        "temperature" = $temperature
+        "temperature" = 0
+        #"stop" = "`n"
+        #>
+        "temperature" = 1
+        "max_tokens" = 256
+        "top_p" = 1
+        #"frequency_penalty" = 0
+        #"presence_penalty" = 0
     }
 
     # Add the API key to the headers of the request
@@ -24,7 +36,7 @@ function _generate-PSScript{
     }
 
     # Make the request to the API and store the response in a variable
-    $response = Invoke-RestMethod -Uri $endpoint -Method Post -Headers $headers -Body (ConvertTo-Json $parameters)
+    Invoke-RestMethod -Uri $endpoint -Method Post -Headers $headers -Body (ConvertTo-Json $parameters) -OutVariable response | Out-Null
     $generatedCode = $response.choices.text
 
     # Print the generated code
