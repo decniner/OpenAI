@@ -14,7 +14,7 @@ function chewy {
         [string]$prompt
     )
 
-    $apiKey = "    "
+    $apiKey = "  O"
     $model = "text-davinci-002"
     $endpoint = "https://api.openai.com/v1/engines/$model/completions"
     
