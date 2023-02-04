@@ -1,72 +1,66 @@
-$previousPrompt = ""
-$previousAnswer = ""
-$Global:name = Read-Host -Prompt "Enter your name"
+# API_KEY = "000"
+
+import requests
+from gtts import gTTS
+import os
 
 
-Add-Type -AssemblyName System.Speech
-$speak = New-Object System.Speech.Synthesis.SpeechSynthesizer
-#$speak.Speak("Welcome.  My name is Chewy. I am an Artificial Intelligence computer program created by Denver Sanchez.  How can I help you?")
+print("Chewy v1.0")
+print("Denver Sanchez")
+print("decniner@gmail.com")
+print("A sophisticated chatbot leveraging OpenAI's GPT-3 language model.")
 
-function chewy {
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]$prompt
-    )
+previous_prompt = ""
+previous_answer = ""
 
-    $apiKey = "  O"
-    $model = "text-davinci-002"
-    $endpoint = "https://api.openai.com/v1/engines/$model/completions"
-    
-    $parameters = @{
-        "prompt" = $prompt
-        "temperature" = 1
-        "max_tokens" = 1024
-        "top_p" = 1
+API_KEY = "000"
+
+print("")
+name = input("Please enter your name: ")
+print("")
+
+def generate_response(prompt):
+    model = "text-davinci-002"
+    endpoint = f"https://api.openai.com/v1/engines/{model}/completions"
+
+    parameters = {
+        "prompt": prompt,
+        "temperature": 1,
+        "max_tokens": 2048,
+        "top_p": 1
     }
 
-    $headers = @{
-        "Content-Type" = "application/json"
-        "Authorization" = "Bearer $apiKey"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {API_KEY}"
     }
 
-    Invoke-RestMethod -Uri $endpoint -Method Post -Headers $headers -Body (ConvertTo-Json $parameters) -OutVariable response | Out-Null
-    $answer = $response.choices.text
+    response = requests.post(endpoint, headers=headers, json=parameters)
+    answer = response.json()["choices"][0]["text"]
+    tts = gTTS(answer)
+    tts.save("answer.mp3")
+    #os.system("mpg321 answer.mp3")
 
-    # Store previous prompt and answer
-    $previousPrompt = $prompt
-    $previousAnswer = $answer
 
-    # Print the generated code
-    #$answer.split(".") |
-    #$answer -replace '\.', "`r`n" -replace '^\s+' |
-    #($answer -replace '\.', "`r`n" ) -replace '^\s+','' -replace '$','. ' |
-    $answer |
-    #answer -replace '\.', "`r`n") |
-    
-    foreach {
-         Write-Host $_ -ForegroundColor Green
-         #$speak.Speak($_)
-    }
-}
+    global previous_prompt
+    global previous_answer
 
-# Continuously prompt the user for a question
-while ($true) {
-    $input = Read-Host "$Name"
-    if ($input -eq "exit") {
+    previous_prompt = prompt
+    previous_answer = answer
+
+    #print(answer)
+    print("\033[32m" + answer + "\033[0m")
+    print("")
+  
+while True:
+    user_input = input(f"{name}: ")
+    if user_input.lower() == "exit":
         break
-    }
-    # check if the input contains a question word
-    if ($input -match "\b(more|who|what|when|where|why|how|which)\b") {
-        # check if previous answer exists
-        if ($previousAnswer) {
-            # use previous prompt and answer in the new prompt to include context
-            $newPrompt = "$previousPrompt $previousAnswer $input"
-            chewy -prompt $newPrompt
-        } else {
-            chewy -prompt $input
-        }
-    } else {
-        chewy -prompt $input
-    }
-}
+    if any(word in user_input.lower() for word in ["more", "who", "what", "when", "where", "why", "how", "which"]):
+        if previous_answer:
+            new_prompt = f"{previous_prompt} {previous_answer} {user_input}"
+            generate_response(new_prompt)
+        else:
+            generate_response(user_input)
+    else:
+        generate_response(user_input)
